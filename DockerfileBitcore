@@ -1,0 +1,83 @@
+# Build the bitcore daemon, cli, and ui from the code at
+# https://github.com/LIMXTEC/BitCore/commit/4bcc737dce6a9b61c1c7e0f8082656fe292b91ac
+
+#FROM debian:jessie
+FROM ubuntu:16.04
+
+# Although it's customary to lump all the apt-get instructions into one layer, I will instead separate them
+# into a small number of layers each containing some related packages. I think you'll find understanding their purposes
+# to be easier.  It will also be able to comment out stuff you don't want.
+
+RUN apt-get update
+
+# The basic foundation of build tools, as per the docs.
+RUN apt-get install -y --no-install-recommends \
+    automake \
+    autotools-dev \
+    bsdmainutils \
+    build-essential \
+    libevent-dev \
+    libssl-dev \
+    libtool \
+    pkg-config
+
+# As per the docs, we only need to selectively install a handful of the boost libraries
+RUN apt-get install -y --no-install-recommends \
+    libboost-chrono-dev \
+    libboost-filesystem-dev \
+    libboost-program-options-dev \
+    libboost-system-dev \
+    libboost-test-dev \
+    libboost-thread-dev
+
+# If you want a wallet, you'll need a db.  Since this is a new coin, we probably don't care about jumping through
+# hoops to get the 4.8 version of the db.  So let's just use what's readily on tap instead.
+RUN apt-get install -y --no-install-recommends \
+    libdb-dev \
+    libdb++-dev
+
+# If you want the QT GUI, you'll need these packages:
+RUN apt-get install -y --no-install-recommends \
+    libprotobuf-dev \
+    libqt5core5a \
+    libqt5dbus5 \
+    libqt5gui5 \
+    protobuf-compiler \
+    qttools5-dev \
+    qttools5-dev-tools 
+
+# You will also need 11vnc xvfb in order to view the QT GUI using a VNC viewer.  Which you need to do
+# if you want to run the QT GUI inside a docker container.
+RUN apt-get install -y --no-install-recommends \
+    x11vnc xvfb
+
+# Need these for git clone
+RUN apt-get install -y --no-install-recommends \
+    ca-certificates \
+    git
+
+RUN rm -rf /var/lib/apt/lists/*
+
+RUN  git clone https://github.com/LIMXTEC/BitCore.git
+                                                           
+WORKDIR /BitCore
+
+# I happen to know that this particular commit works.
+RUN git checkout 4bcc737
+
+RUN ./autogen.sh 
+#RUN ./configure --disable-wallet
+RUN ./configure --with-incompatible-bdb --without-miniupnpc  
+RUN make
+RUN make install
+RUN make clean
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod 755 /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+
+
+
+
+
