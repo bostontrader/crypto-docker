@@ -3,8 +3,10 @@
 
 FROM ubuntu:16.04
 
-# We need to do this first in order to see any packages at all
+# 1. We need to do this first in order to see any packages at all
 RUN apt-get update
+
+# 2. Decide which wallet format to use.  If you have an old wallet that you need to support then you probably want to use v4.8 of the db. If so then keep this section
 
 # This is a dependency of add-apt-repository.
 RUN apt-get install  -y --no-install-recommends software-properties-common
@@ -18,21 +20,11 @@ RUN apt-get update
 # Now get v4.8 of the wallet db
 RUN apt-get install  -y --no-install-recommends libdb4.8-dev libdb4.8++-dev
 
-# The basic foundation of build tools, as per the docs.
 RUN apt-get install -y --no-install-recommends \
-    autoconf \
-    autotools-dev \
-    build-essential \
-    libssl-dev \
-    libtool \
-    pkg-config
+    libqt4-dev libprotobuf-dev protobuf-compiler
 
-
-# As per the docs, we need boost
-RUN apt-get install -y --no-install-recommends \
-    libboost-all-dev
-
-# If you want the QT GUI, you'll need these packages:
+# If you don't care about using the v4.8 format, then remove the above and use this instead:
+# Warning: This will probably not work. That's why I'm using v4.8.
 #RUN apt-get install -y --no-install-recommends \
     #libprotobuf-dev \
     #libqt5core5a \
@@ -42,15 +34,28 @@ RUN apt-get install -y --no-install-recommends \
     #qttools5-dev \
     #qttools5-dev-tools 
 
-RUN apt-get install -y --no-install-recommends \
-    libqt4-dev libprotobuf-dev protobuf-compiler
 
-# You will also need 11vnc xvfb in order to view the QT GUI using a VNC viewer.  Which you need to do
-# if you want to run the QT GUI inside a docker container.
+# 3. Install the basic foundation of build tools, as per the docs.
 RUN apt-get install -y --no-install-recommends \
-    x11vnc xvfb
+    autoconf \
+    autotools-dev \
+    build-essential \
+    libssl-dev \
+    libtool \
+    pkg-config
 
-# Need these for git clone
+# 4. Install boost, as per the docs.  Do we need all of it? Or can we just use parts of it?
+RUN apt-get install -y --no-install-recommends \
+    libboost-all-dev
+
+# 5. Install these packages in order to view the QT GUI using a VNC viewer.  Which you need to do if you want to run the QT GUI inside a docker container.
+RUN apt-get install -y --no-install-recommends \
+    x11vnc \
+    xvfb
+
+# 6. Clone the source code.
+
+# You'll need these for git clone
 RUN apt-get install -y --no-install-recommends \
     ca-certificates \
     git
@@ -62,31 +67,31 @@ WORKDIR /Unobtanium
 # I happen to know that this particular commit works.
 RUN git checkout 7ccdf8
 
-# The docs don't mention this, but you'll need it for autogen.sh
+# 7. The docs don't mention this, but you'll need it for autogen.sh
 RUN apt-get install -y --no-install-recommends \
     automake
 RUN ./autogen.sh 
 
-# The docs don't mention this, but you'll need it for configure
+# 8. The docs don't mention this, but you'll need it for configure
 RUN apt-get install -y --no-install-recommends \
     bsdmainutils
-#RUN export CXXFLAGS=$CXXFLAGS' -fPIE'
-#RUN ./configure --disable-wallet
-#RUN ./configure --with-incompatible-bdb --without-miniupnpc  
-RUN ./configure      --without-miniupnpc --enable-hardening
+
+RUN ./configure --without-miniupnpc 
 
 # Fix this error.  See https://bitcointalk.org/index.php?topic=1312757.0
 #RUN "echo 'Almost solved this'| sed 's/Almost/We have/'"
-RUN sed -i 's/<const CScriptID&>/<CScriptID>/g' src/rpcrawtransaction.cpp
+#RUN sed -i 's/<const CScriptID&>/<CScriptID>/g' src/rpcrawtransaction.cpp
 #RUN "sed -i 's/<const CScriptID&>/<CScriptID>/g' ./src/rpcrawtransaction.cpp"
 
 #usr/include/x86_64-linux-gnu/qt5/QtCore/qglobal.h:1067:4: error: #error "You must build your code with position independent code if Qt was #built with -reduce-relocations. " "Compile your code with -fPIC (-fPIE is not enough)."
  #  error "You must build your code with position independent code if Qt was built with -reduce-relocations. "\
 
 #RUN make -f makefile.unix ... -e PIE=1
-RUN make
+#RUN make
 #RUN make install
 #RUN make clean
+
+LABEL author.name="Thomas Radloff"
 
 COPY entrypoint.sh /
 RUN chmod 755 /entrypoint.sh
