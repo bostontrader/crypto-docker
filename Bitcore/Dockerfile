@@ -8,6 +8,16 @@ FROM ubuntu:16.04
 # into a small number of layers each containing some related packages. I think you'll find understanding their purposes
 # to be easier.  It will also be able to comment out stuff you don't want.
 
+# We need to do this first in order to see any packages at all
+RUN apt-get update
+
+# This is a dependency of add-apt-repository.
+RUN apt-get install  -y --no-install-recommends software-properties-common
+
+# We need this because we want to get v4.8 of the wallet db
+RUN add-apt-repository ppa:bitcoin/bitcoin
+
+# And now we need to update this again
 RUN apt-get update
 
 # The basic foundation of build tools, as per the docs.
@@ -32,9 +42,9 @@ RUN apt-get install -y --no-install-recommends \
 
 # If you want a wallet, you'll need a db.  Since this is a new coin, we probably don't care about jumping through
 # hoops to get the 4.8 version of the db.  So let's just use what's readily on tap instead.
-RUN apt-get install -y --no-install-recommends \
-    libdb-dev \
-    libdb++-dev
+#RUN apt-get install -y --no-install-recommends \
+    #libdb-dev \
+    #libdb++-dev
 
 # If you want the QT GUI, you'll need these packages:
 RUN apt-get install -y --no-install-recommends \
