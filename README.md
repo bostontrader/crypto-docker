@@ -20,9 +20,9 @@ $ cd crypto-docker
 ```
 This directory contains several files that start with 'Dockerfile' and have some coin symbol or other identifier as a suffix.  If you find the Dockerfile that corresponds to the coin that you want a GUI for then build a docker image from that dockerfile.
 
-As an example, let's build an image for the GUI for Unobtanium.  The dockerfile we want is DockerfileUNO and let's name the image 'crypto-docker-uno' 
+As an example, let's build an image for the GUI for Unobtanium.  The dockerfile we want is Dockerfile_Unobtanium and let's name the image 'crypto-docker-uno' 
 ```sh
-$ docker build -t crypt-docker-uno - < DockerfileUNO 
+$ docker build -t crypto-docker-uno - < Dockerfile_Unobtanium 
 ```
 When building the docker image be aware that you may need to use sudo.
 
@@ -55,9 +55,17 @@ docker ps is a good choice because it shows this information.
 # All Together Now
 
 Given [all this new learning...](https://www.youtube.com/watch?v=KrD16CBEJRs)
+```sh
+$ docker run -it --rm -p 5900 --mount type=bind,source=/home/batman/.bitcore,destination=/root/.bitcore crypto-docker-uno
+```
+This will run the example image **crypt-docker-uno** and make its X11 available via port 5900.
+```sh
+$ docker ps
+```
+This will give you a display of all your running containers.  Hopefully you'll see **crypt-docker-uno** and can determine which port on the local host it's using.
 
-docker run -it --rm -p 5900 --mount type=bind,source=/home/batman/.bitcore,destination=/root/.bitcore rad-docker-bitcore
+Finally, run your VNC viewer of choice and connect to that port on localhost.  For example, if you see that port 5900 in the container has been mapped to port 32768 on the host, you would connect to 127.0.0.1:32768.
 
-
+The viewer will demand a password and that password is hardwired into the original Dockerfile.
 # Tip Jar
 bitcore: 197uE6hykxaow7jbGiEv41wmcHV5TCjV9R
