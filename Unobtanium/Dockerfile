@@ -79,32 +79,21 @@ RUN apt-get install -y --no-install-recommends \
 RUN ./configure --without-miniupnpc 
 
 # Fix this error.  See https://bitcointalk.org/index.php?topic=1312757.0
-#RUN "echo 'Almost solved this'| sed 's/Almost/We have/'"
-#RUN sed -i 's/<const CScriptID&>/<CScriptID>/g' src/rpcrawtransaction.cpp
-#RUN "sed -i 's/<const CScriptID&>/<CScriptID>/g' ./src/rpcrawtransaction.cpp"
+RUN sed -i 's/<const CScriptID&>/<CScriptID>/g' src/rpcrawtransaction.cpp
 
-#usr/include/x86_64-linux-gnu/qt5/QtCore/qglobal.h:1067:4: error: #error "You must build your code with position independent code if Qt was #built with -reduce-relocations. " "Compile your code with -fPIC (-fPIE is not enough)."
- #  error "You must build your code with position independent code if Qt was built with -reduce-relocations. "\
+RUN make && make install && make clean 
 
-#RUN make -f makefile.unix ... -e PIE=1
-#RUN make
-#RUN make install
-#RUN make clean
+# Why doesn't this work?  Figure this out
+# && \
+# strip /usr/local/bin/test_bitcoin && \
+# strip /usr/local/bin/test_unobtanium && \
+# strip /usr/local/bin/unobtanium-cli && \
+# strip /usr/local/bin/unobtanium-gt && \
+# strip /usr/local/bin/unobtanium-tx && \
+# strip /usr/local/bin/unobtaniumd
 
 LABEL author.name="Thomas Radloff"
 
 COPY entrypoint.sh /
 RUN chmod 755 /entrypoint.sh
 
-#strip unobtaniumd
-# cp unobtaniumd ..
-# Enter a running container
-#sudo docker exec -it f3de1e4f9191 /bin/bash
-
-# Run a container and enter it
-# sudo docker run -it docker-study
-
-# Run a container, execute command
-# sudo docker run -it docker-study /entrypoint.sh
-
-#du -h /var | grep '[0-9\.]\+M'

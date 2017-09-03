@@ -68,4 +68,5 @@ Finally, run your VNC viewer of choice and connect to that port on localhost.  F
 
 The viewer will demand a password and that password is hardwired into the original Dockerfile.
 # Tip Jar
+ETH: 0x17054e20B4498d4861A628DD0054FfA1F7006029
 bitcore: 197uE6hykxaow7jbGiEv41wmcHV5TCjV9R
