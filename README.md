@@ -23,9 +23,11 @@ This directory contains several subdirectories, one for each supported coin. Ins
 As an example, let's build an image for the GUI for Unobtanium and name the image 'crypto-docker-uno' 
 ```sh
 $ cd Unobtanium
-$ docker build -t crypto-docker-uno .   <- notice the ending dot. 
+$ docker build -t --no-cache crypto-docker-uno .   <- notice the ending dot. 
 ```
 When building the docker image be aware that you may need to use sudo.
+
+We use the --no-cache option so that apt-get update doesn't use the cache.  Otherwise it may not be able to find the packages it needs.  But if you have executed this recently enough you may omit --no-cache it it will very likely work.
 
 # Digging Deeper
 
