@@ -93,7 +93,7 @@ protobuf-compiler \
 
 # 5. Clone the source code.
 
-RUN git clone https://github.com/MazaCoin/maza --depth=1                            
+RUN git clone https://github.com/MazaCoin/maza                         
 WORKDIR /maza
 
 # I happen to know that this particular commit works.

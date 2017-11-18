@@ -80,7 +80,7 @@ qtbase5-dev
 
 # 5. Clone the source code.
 
-RUN git clone https://github.com/zetacoin/zetacoin --depth=1                                    
+RUN git clone https://github.com/zetacoin/zetacoin                                
 WORKDIR /zetacoin
 
 # I happen to know that this particular commit works.
