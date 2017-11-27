@@ -1,5 +1,5 @@
 # Build bgoldd, bgold-cli, bitcoin-tx, and bitcoin-qt from the code at
-# https://github.com/bostontrader/bitcoin-gold/commit/1d3d85a74d1d16d1b12890c15fbb9f85cf8d597c
+# https://github.com/BTCGPU/BTCGPU/commit/287d089679e7ca48acd3d49d57d3697c3030b74e
 
 FROM ubuntu:16.04
 LABEL maintainer Thomas Radloff <bostontrader@gmail.com>
@@ -69,11 +69,11 @@ libqt5gui5 libqt5core5a libqt5dbus5 qttools5-dev qttools5-dev-tools libprotobuf-
 
 # 6. Clone the source code.
 
-RUN git clone https://github.com/bostontrader/bitcoin-gold                     
-WORKDIR /bitcoin-gold
+RUN git clone -b 0.15 https://github.com/BTCGPU/BTCGPU                     
+WORKDIR /BTCGPU
 
 # I happen to know that this particular commit works.
-RUN git checkout 1d3d85
+RUN git checkout 287d08
 
 
 # 7. Make and strip the debug symbols
