@@ -6,7 +6,7 @@ CHNCoin aka CNC died and was brought back to life by [RoadTrain](https://github.
 # Getting Started
 ```sh
 $ git clone https://github.com/bostontrader/crypto-docker
-$ cd crypto-docker/CHNCoin
+$ cd crypto-docker/CNC-CHNCoin
 $ docker build -t crypto-docker-cnc . 
 $ mkdir /home/batman/.chncoin
 $ docker run -it --rm -p 5900 --mount type=bind,source=/home/batman/.chncoin,destination=/root/.chncoin crypto-docker-cnc

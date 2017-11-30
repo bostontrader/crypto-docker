@@ -1,7 +1,7 @@
 # Getting Started
 ```sh
 $ git clone https://github.com/bostontrader/crypto-docker
-$ cd crypto-docker/Devcoin
+$ cd crypto-docker/DVC-Devcoin
 $ docker build -t crypto-docker-dvc . 
 $ mkdir /home/batman/.devcoin
 $ docker run -it --rm -p 5900 --mount type=bind,source=/home/batman/.devcoin,destination=/root/.devcoin crypto-docker-dvc

@@ -1,7 +1,7 @@
 # Getting Started
 ```sh
 $ git clone https://github.com/bostontrader/crypto-docker
-$ cd crypto-docker/Litecoin
+$ cd crypto-docker/LTC-Litecoin
 $ docker build -t crypto-docker-ltc . 
 $ mkdir /home/batman/.Litecoin
 $ docker run -it --rm -p 5900 --mount type=bind,source=/home/batman/.Litecoin,destination=/root/.Litecoin crypto-docker-ltc

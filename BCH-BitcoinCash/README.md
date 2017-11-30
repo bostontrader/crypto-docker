@@ -1,7 +1,7 @@
 # Getting Started
 ```sh
 $ git clone https://github.com/bostontrader/crypto-docker
-$ cd crypto-docker/BitcoinABC
+$ cd crypto-docker/BCH-BitcoinCash
 $ docker build -t crypto-docker-bch . 
 $ mkdir /home/batman/.bitcoin
 $ docker run -it --rm -p 5900 --mount type=bind,source=/home/batman/.bitcoin,destination=/root/.bitcoin crypto-docker-bch

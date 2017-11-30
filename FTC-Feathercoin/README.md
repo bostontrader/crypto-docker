@@ -1,7 +1,7 @@
 # Getting Started
 ```sh
 $ git clone https://github.com/bostontrader/crypto-docker
-$ cd crypto-docker/Feathercoin
+$ cd crypto-docker/FTC-Feathercoin
 $ docker build -t crypto-docker-ftc . 
 $ mkdir /home/batman/.feathercoin
 $ docker run -it --rm -p 5900 --mount type=bind,source=/home/batman/.feathercoin,destination=/root/.feathercoin crypto-docker-ftc

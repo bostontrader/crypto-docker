@@ -1,7 +1,7 @@
 # Getting Started
 ```sh
 $ git clone https://github.com/bostontrader/crypto-docker
-$ cd crypto-docker/Unobtanium
+$ cd crypto-docker/UNO-Unobtanium
 $ docker build -t crypto-docker-uno . 
 $ mkdir /home/batman/.unobtanium
 $ docker run -it --rm -p 5900 --mount type=bind,source=/home/batman/.unobtanium,destination=/root/.unobtanium crypto-docker-uno

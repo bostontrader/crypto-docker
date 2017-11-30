@@ -1,7 +1,7 @@
 # Getting Started
 ```sh
 $ git clone https://github.com/bostontrader/crypto-docker
-$ cd crypto-docker/Namecoin
+$ cd crypto-docker/NMC-Namecoin
 $ docker build -t crypto-docker-nmc . 
 $ mkdir /home/batman/.namecoin
 $ docker run -it --rm -p 5900 --mount type=bind,source=/home/batman/.namecoin,destination=/root/.namecoin crypto-docker-nmc
