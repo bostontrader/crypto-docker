@@ -1,7 +1,6 @@
-# Build the Ditcore daemon, cli, and GUI from the code at
+# Build bitcored, bitcore-cli, bitcore-tx, and bitcore-qt from the source code at
 # https://github.com/LIMXTEC/BitCore/commit/4bcc737dce6a9b61c1c7e0f8082656fe292b91ac
 
-#FROM debian:jessie
 FROM ubuntu:16.04
 
 # Although it's customary to lump all the apt-get instructions into one layer, I will instead separate them
@@ -42,11 +41,11 @@ RUN apt-get install -y --no-install-recommends \
 
 # If you want a wallet, you'll need a db.  Since this is a new coin, we probably don't care about jumping through
 # hoops to get the 4.8 version of the db.  So let's just use what's readily on tap instead.
-#RUN apt-get install -y --no-install-recommends \
-    #libdb-dev \
-    #libdb++-dev
+RUN apt-get install -y --no-install-recommends \
+    libdb-dev \
+    libdb++-dev
 
-# If you want the QT GUI, you'll need these packages:
+# If you want the QT 5 GUI, you'll need these packages:
 RUN apt-get install -y --no-install-recommends \
     libprotobuf-dev \
     libqt5core5a \
@@ -75,19 +74,13 @@ WORKDIR /BitCore
 # I happen to know that this particular commit works.
 RUN git checkout 4bcc737
 
-RUN ./autogen.sh 
-#RUN ./configure --disable-wallet
-RUN ./configure --with-incompatible-bdb --without-miniupnpc  
-RUN make
-RUN make install
-RUN make clean
+RUN \
+./autogen.sh && \
+./configure --with-incompatible-bdb --without-miniupnpc  && \
+make && \
+strip src/bitcored && strip src/bitcore-cli && strip src/bitcore-tx && strip src/qt/bitcore-qt  && \
+make install && make clean
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod 755 /entrypoint.sh
-
-ENTRYPOINT ["/entrypoint.sh"]
-
-
-
-
 

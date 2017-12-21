@@ -1,4 +1,4 @@
-# Build the CHNCoin daemon, cli, and GUI from the code at
+# Build the Devcoin daemon and GUI from the code at
 # https://github.com/coinzen/devcoin/commit/ea4b51021ef98fd928320cbd1469460b93a0b33c
 
 FROM ubuntu:14.04
