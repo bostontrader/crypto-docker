@@ -5,7 +5,7 @@ FROM ubuntu:16.04
 
 # Although it's customary to lump all the apt-get instructions into one layer, I will instead separate them
 # into a small number of layers each containing some related packages. I think you'll find understanding their purposes
-# to be easier.  It will also be able to comment out stuff you don't want.
+# to be easier.
 
 # We need to do this first in order to see any packages at all
 RUN apt-get update
