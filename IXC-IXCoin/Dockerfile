@@ -1,5 +1,5 @@
 # Build ixcoind, ixcoin-cli, ixcoin-tx, and ixcoin-qt from the code at
-# https://github.com/domob1812/ixcoin/commit/a81631a610732cf6cf6faffabc033f8349703956
+# https://github.com/domob1812/ixcoin/commit/757d6983344b3100b4a37804713984efaabf5516
 
 FROM ubuntu:16.04
 LABEL maintainer Thomas Radloff <bostontrader@gmail.com>
@@ -81,20 +81,26 @@ qtbase5-dev \
 
 # 5. Clone the source code.
 
-RUN git clone https://github.com/domob1812/ixcoin                                        
+RUN git clone --depth=10 https://github.com/domob1812/ixcoin                                        
 WORKDIR /ixcoin
 
-# I happen to know that this particular commit works.
-RUN git checkout a81631
+# I happen to know that this particular commit works. If this commit cannot be found, examine git clone --depth.
+RUN git checkout 757d69
 
 
 # 6. Make and strip the debug symbols
-RUN ./autogen.sh && ./configure && make \
+RUN ./autogen.sh && ./configure && make && \
 
-&& strip src/ixcoind && strip src/ixcoin-cli && strip src/ixcoin-tx && strip src/qt/ixcoin-qt \
-&& make install && make clean
+strip src/ixcoind && \
+strip src/ixcoin-cli && \
+strip src/ixcoin-tx && \
+strip src/qt/ixcoin-qt && \
+strip src/qt/test/test_bitcoin-qt && \
+strip src/test/test_bitcoin && \
 
-# Wrap it up
+make install && make clean
+
+# Wrap it up.
 COPY entrypoint.sh /
 RUN chmod 755 /entrypoint.sh
 
