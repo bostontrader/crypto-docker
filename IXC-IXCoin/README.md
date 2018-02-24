@@ -29,6 +29,6 @@ This will give you a display of all your running containers.  Hopefully you'll s
 Finally, run your VNC viewer of choice and connect to that port on localhost.  For example, if you see that port 5900 in the container has been mapped to port 32768 on the host, you would connect to 127.0.0.1:32768.  Recall that you'll need the password you set for x11vnc earlier.
 
 # Tip Jar
-ixq: xezhfifgcbuzUWWai36PUvVCz1iFkRM4kU
+ixc: xezhfifgcbuzUWWai36PUvVCz1iFkRM4kU
 
 
