@@ -1,5 +1,5 @@
 # Build the Litecoin daemon, cli, and GUI from the code at
-# https://github.com/litecoin-project/litecoin/commit/3c0fef0139ba3b5093d1dd66c6bf5c411a41df7a
+# https://github.com/litecoin-project/litecoin/commit/845fc69ab3e4f02d9b00628ce844321147991fa07a
 
 FROM ubuntu:16.04
 
@@ -57,7 +57,7 @@ RUN apt-get install -y --no-install-recommends \
     x11vnc \
     xvfb
 
-# 6. Clone the source code.
+# 7. Clone the source code.
 
 # You'll need this for git clone
 RUN apt-get install -y --no-install-recommends \
@@ -68,18 +68,25 @@ RUN  git clone https://github.com/litecoin-project/litecoin
 WORKDIR /litecoin
 
 # I happen to know that this particular commit works.
-RUN git checkout 3c0fef
+RUN git checkout 845fc6
 
-# 7. Now build it!
+# 8. Now build it!
 
 RUN ./autogen.sh 
 
 # Recall that by default we use the v4.8 version of the db
 RUN ./configure --without-miniupnpc 
 
-RUN make 
+RUN make && \
 
-RUN make install && make clean 
+strip src/litecoind && \
+strip src/litecoin-cli && \
+strip src/litecoin-tx && \
+strip src/qt/litecoin-qt && \
+strip src/qt/test/test_litecoin-qt && \
+strip src/test/test_litecoin && \
+
+make install && make clean 
 
 LABEL author.name="Thomas Radloff"
 
