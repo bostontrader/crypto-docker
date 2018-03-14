@@ -90,7 +90,13 @@ RUN git checkout 29204e
 # 6. Make and strip the debug symbols
 RUN ./autogen.sh && ./configure && make && \
 
-strip src/zetacoind && strip src/zetacoin-cli && strip src/qt/zetacoin-qt && \
+strip src/zetacoind && \
+strip src/zetacoin-cli && \
+strip src/zetacoin-tx && \
+strip src/qt/zetacoin-qt && \
+strip src/qt/test/test_zetacoin-qt && \
+strip src/test/test_zetacoin && \
+
 make install && make clean
 
 # Wrap it up
