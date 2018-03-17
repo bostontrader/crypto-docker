@@ -1,5 +1,5 @@
 # Build the Feathercoin daemon, cli, and QT5 GUI from the code at
-# https://github.com/FeatherCoin/Feathercoin/commit/2ef88122d903172b564fe53a3abcf1928e2af128
+# https://github.com/FeatherCoin/Feathercoin/commit/6621a975b556175964e132654baea448e7702479
 
 FROM ubuntu:16.04
 LABEL maintainer Thomas Radloff <bostontrader@gmail.com>
@@ -22,6 +22,9 @@ build-essential \
 # need this to clone the source code
 ca-certificates \
 
+# need this to build libxing
+cmake \
+
 # hexdump
 dh-autoreconf \
 
@@ -36,13 +39,11 @@ libboost-system-dev \
 libboost-test-dev \
 libboost-thread-dev \
 
+libevent-dev \
 libssl-dev \
 
 # config wants this
 pkg-config \
-
-# need this to download a repository key
-wget \
 
 # Install these packages in order to view the QT GUI using a VNC viewer.  Which you need to do if you want to run the QT GUI inside a docker container.
 x11vnc \
@@ -73,36 +74,37 @@ libqt5core5a \
 libqt5gui5 \
 qttools5-dev-tools \
 protobuf-compiler \
-qtbase5-dev \
+qtbase5-dev
 
 
 # 5. We apparently cannot disable libzxing so we must bite the bullet and just install the damn thing.
-&& echo "deb http://download.opensuse.org/repositories/home:/wellenreiter01/xUbuntu_16.04 ./" > /etc/apt/sources.list.d/opensuse.list \
-
-&& wget http://download.opensuse.org/repositories/home:/wellenreiter01/Debian_7.0/Release.key \
-
-&& apt-key add Release.key \
-
-&& apt-get update \ 
-&& apt-get install libzxing \
-
-&& apt-get clean
+RUN echo "deb http://download.opensuse.org/repositories/home:/wellenreiter01/xUbuntu_16.04 ./" > /etc/apt/sources.list.d/opensuse.list
+COPY zxingRelease.key /
+RUN apt-key add /zxingRelease.key && \
+apt-get update && \ 
+apt-get install libzxing && \
+apt-get clean
 
 
 # 6. Clone the source code.
-
 RUN git clone https://github.com/FeatherCoin/Feathercoin                                          
 WORKDIR /Feathercoin
 
 # I happen to know that this particular commit works.
-RUN git checkout 2ef881
+RUN git checkout 6621a9
 
 
-# 7. Make and strip the debug symbols
-RUN ./autogen.sh && ./configure && make \
+# 7. configure, make, install.
+RUN ./autogen.sh && \
 
-&& strip src/feathercoind && strip src/feathercoin-cli && strip src/qt/feathercoin-qt \
-&& make install && make clean
+# This "works" but do I really need all this?
+./configure --disable-shared --with-pic CXXFLAGS="-fPIC" CPPFLAGS="-fPIC" && \
+
+make && \
+
+# Apparently by default, building FTC does _not_ result in large binaries so it's not worth any effort to strip them of debug symbols.
+# && strip src/feathercoind && strip src/feathercoin-cli && strip src/qt/feathercoin-qt \
+make install && make clean
 
 # Wrap it up
 COPY entrypoint.sh /
