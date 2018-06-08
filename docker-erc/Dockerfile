@@ -79,6 +79,7 @@ WORKDIR /Europecoin-V3
 # RUN git checkout 4bcc737
 
 RUN \
+chmod +x ./autogen.sh && \
 ./autogen.sh && \
 ./configure --with-incompatible-bdb --without-miniupnpc  && \
 make && \
