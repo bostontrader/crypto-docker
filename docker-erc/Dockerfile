@@ -73,7 +73,7 @@ RUN rm -rf /var/lib/apt/lists/*
 
 RUN  git clone https://github.com/LIMXTEC/Europecoin-V3
                                                            
-WORKDIR /Europecoin
+WORKDIR /Europecoin-V3
 
 # I happen to know that this particular commit works.
 # RUN git checkout 4bcc737
