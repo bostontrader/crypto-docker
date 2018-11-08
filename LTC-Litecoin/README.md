@@ -48,7 +48,7 @@ Next, from a shell on the host:
 ```sh
 $ docker ps
 ```
-This will give you a display of all your running containers.  Hopefully you'll see **crypt-docker-ltc** and can determine which port on the local host it's using.
+This will give you a display of all your running containers.  Hopefully you'll see **crypto-docker-ltc** and can determine which port on the local host it's using.
 
 Finally, run your VNC viewer of choice and connect to that port at 127.0.0.1.  For example, if you see that port 5900 in the container has been mapped to port 32768 on the host, you would connect to 127.0.0.1:32768.  Recall that you'll need the password you set for x11vnc earlier.
 
