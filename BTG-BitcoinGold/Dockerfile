@@ -1,4 +1,4 @@
-# Build bgoldd, bitcoin-qt, and their other friends from the source code date October 2018, located at:
+# Build bgoldd, bitcoin-qt, and their other friends from the source code dated October 2018, located at:
 
 FROM ubuntu:18.04
 
@@ -76,10 +76,10 @@ RUN apt-get update \
 
     # 7A.  Full clone.
     # && git clone $SOURCE_ORIGIN \
-    # && cd $SOURCE_LOCAL_ROOT
+    # && cd $SOURCE_LOCAL_ROOT \
 
     # We happen to know that this particular commit works.
-    # && git checkout 69fce7 \
+    # && git checkout $COMMIT \
 
     # - or -
 
