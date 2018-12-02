@@ -1,6 +1,6 @@
 # Build the litecoin executables from the code at https://github.com/litecoin-project/litecoin/commit/69fce744115a7d2889ff1b90e89582b83de405ad (2018-Sep)
 
-FROM ubuntu:18.04
+FROM ubuntu:16.04
 
 RUN apt-get update \
 
