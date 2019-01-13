@@ -1,0 +1,5 @@
+FROM cd/00
+
+RUN apk add boost-dev=1.60.0-r2
+
+

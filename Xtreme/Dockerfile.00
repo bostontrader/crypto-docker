@@ -1,0 +1,6 @@
+FROM cd/0
+
+RUN apk add autoconf
+RUN apk add automake
+RUN apk add libtool
+

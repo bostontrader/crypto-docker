@@ -1,0 +1,16 @@
+FROM cd/0000
+
+# Berkeley db 5.3
+RUN apk add db-dev
+
+# Packages for qt 5
+RUN apk add dbus protobuf-dev qt5-qtbase-dev qt5-qttools-dev
+
+# Packages for the GUI
+RUN apk add libvncserver-dev libxtst-dev xvfb
+
+# Now build x11vnc
+RUN git clone https://github.com/LibVNC/x11vnc.git
+WORKDIR /x11vnc
+RUN ./autogen.sh
+RUN make && make install
