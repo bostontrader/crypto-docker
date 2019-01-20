@@ -20,11 +20,11 @@ Using **crypto-docker** you will be able to:
 5. Build an image that contains gdb and gdbgui.  The running container will communicate with an external web browser to enable graphical debugging of the software.
 
 
-# Comes in Two Flavors
+# It Comes in Two Flavors
 
 ## Legacy Edition
 
-The project originated with the First Dockerfile. As with cats or children, soon there was a second one.  And so on and so on.  Without benefit of hindsight we did things in a certain way that we might cringe at today.  As time goes on we'll eventually revisit and update the Legacy Dockerfiles, but until then, they still exist and still need your love and understanding.
+The project originated with the First Dockerfile. As with mice, cats, and children, where there was one, soon there were more. Without benefit of hindsight we did things in a certain way that we might cringe at today.  As time goes on we'll eventually revisit and update the Legacy Dockerfiles, but until then, they still exist and still need your love and understanding.
 
 ## Xtreme Edition
 
@@ -66,15 +66,13 @@ $ docker build -t cd/xjo-joulecoin:production -f Dockerfile.production .
 ```
 This will build cd/xjo-joulecoin:production which contains only the desired executeables, optimized and devoid of debug symbols, as well as some plumbing for X11.  Nothing else.  This gives us a compact image.
 
-The prior steps built the images and are only needed when you first clone the repo or make any changes to the Dockerfiles thereafter.  It is however harmless to run these again.  But after the images are built, it's time to run the xjo-joulecoin:production image.
-
 From a shell window on the host...
 
 ```sh
 $ export DATADIR=/some/path/to/.joulecoin
 $ docker run -it --rm -p 5900:5900 -u $(id -u ${USER}):$(id -g ${USER}) --mount type=bind,source=$DATADIR,destination=/.joulecoin cd/xjo-joulecoin:production
 ```
-This will run the xjo-joulecoin:production container and mount the given directory to the container, for use as Joulecoin's datadir.  When we run this we will obtain a shell into the container, and when stopped, the container will be removed.  Port 5900 in the container will be connected to port 5900 on the host, for use of X11 and the viewer.  The present user id and group id of the host will be passed to the container, which will use this info to avoid chowning the files of DATADIR to root.
+This will run the xjo-joulecoin:production image and mount the given directory to the container, for use as Joulecoin's datadir.  When we run this we will obtain a shell into the container, and when stopped, the container will be removed.  Port 5900 in the container will be connected to port 5900 on the host, for use by X11 and the viewer.  The present user id and group id of the host will be passed to the container, which will use this info to avoid chowning the files of DATADIR to root.
 
 Note: /somepath/to/.joulecoin must already exist, docker won't create it for you.
 
@@ -101,34 +99,31 @@ See the instructions for this in the prior example.
 ```sh
 $ docker build -t cd/xjo-joulecoin:debug -f Dockerfile.debug .
 ```
-This will build cd/xjo-joulecoin:debug which contains the desired executeables with debug symbols and no optimization.  It will also install some tools of debuggery but will not install any of the plumbing for X11.  We leave this as an exercise for the reader.  This gives us a larger image.
+This will build cd/xjo-joulecoin:debug which contains the desired executeables with debug symbols and no optimization.  It will also install some tools of debuggery.  This gives us a larger image.
 
-The prior steps built the images and are only needed when you first clone the repo or make any changes to the Dockerfiles thereafter.  It is however harmless to run these again.  But after the images are built, it's time to run the xjo-joulecoin:debug image.
+In order to run the debug image, from a shell window on the host:
 
-From a shell window on the host there are basically two choices for running the container:
-
-Choice A:
-```sh
-$ docker run -it --rm --privileged -p 5000:5000 cd/xjo-joulecoin:debug
-```
-This will run the xjo-joulecoin:debug container but will not mount any data directory from the host.  Instead, the container will create its own ephemeral datadir.  When we run this we will obtain a shell into the container, and when stopped, the container will be removed. We need the --privileged flag to make the debugger work. Port 5000 in the container will be connected to port 5000 on the host, for use by the debugger.  Everything in the container will run as root.
-
-This is a good choice if we're not working on real data and we just want to look at the operation of the program.
-
-
-Choice B:
 ```sh
 $ export DATADIR=/some/path/to/.joulecoin
-$ docker run -it --rm --privileged -p 5000:5000 --mount type=bind,source=$DATADIR,destination=/.joulecoin cd/xjo-joulecoin:debug
+$ docker run -it --rm --privileged -p 5000:5000 -p 5900:5900 --mount type=bind,source=$DATADIR,destination=/.joulecoin cd/xjo-joulecoin:debug
 ```
-This will run the xjo-joulecoin:debug container and mount the given directory to the container, for use as Joulecoin's datadir. Everything is also run as root and in doing so our datadir will get chowned to root and you'll need to rechown it later.  This is a nasty "feature" that arises because of installing the software first as root, when we build the container, and then trying to run the container to use the current host's user.  Doing so does not compute.
+This will run the xjo-joulecoin:debug image and mount the given "source" directory to the container, for use as joulecoin's datadir.  As with before, the source directory must exist because docker won't create it for you.
 
-For either choice, once inside the container...
+Note: Everything is also run as root and in doing so our datadir will get chowned to root so you might need to rechown it later.  This is a nasty "feature" that arises because of installing the software first as root, when we build the container, and then trying to run the container to use the current host's user.  Doing so does not compute.
+
+Once inside the container...
 
 ```sh
 $ gdbgui -r "src/joulecoind -printtoconsole -rpcuser=user -rpcpassword=password"
 ```
-The enables gdbgui to invoke gdb which will load src/bitcoind and get it ready to run.  Gdugui will print a log message saying "View gdbgui at http://172.17.0.2:5000"  Pay no attention that IP address.  That's docker networking and we won't worry about it now.  Instead, from your browser of choice on the host system, browse to localhost:5000.  There it is!
+
+Or maybe...
+
+```sh
+$ gdbgui -r "src/qt/joulecoin-qt"
+```
+
+These commands enable gdbgui to invoke gdb which will load the specified executable and get it ready to run.  Gdugui will print a log message saying "View gdbgui at http://172.17.0.2:5000"  From a browser of choice on the host system, browse to there.  There it is!
 
 To help you get started with debugging, go to the bottom of the browser where you see "enter gdb command".  Type **b main** This means to break at the entry of the main function.  Next, type **start**  this "starts" joulecoind.  I'll let you contemplate the subtleties of what that actually means.  Better type, type **s** (for step).  Then doit again and again.. Now you're walking through the code!
 
@@ -198,47 +193,39 @@ Dockerfile.0102 produces an image named cd/0102.  The 4 digits, from left to rig
 
 In this project we use Alpine.  Ideally we want to use the most recent version but sometimes we must use earlier versions.  These Dockerfiles also include git.
 
-Presently we only use Alpine 3.4, identified as sequential variation 0.
-
-Dockerfile.0 produces image cd/0
+Presently we only use Alpine 3.4 identified as sequential variation 0.
 
 
 * Layer 2.
 
-This layer adds the packages required to succussfully pass autogen.sh.  The source code will come in a later layer.
+This layer adds the packages required to succussfully pass autogen.sh.  The actual versions of these packages used depends upon the actual version of Alpine from Layer 1.
 
-Presently we only have a single sequential variation 0, that decends from cd/0
-
-Dockerfile.00 produces image cd/00
+Presently we only have a single sequential variation identified as variation 0.
 
 
 * Layer 3.
 
-This layer adds the boost library packages.  Which version of boost do we want?  This is highly influenced by the choice in Layer 1.
+This layer adds the boost library packages.  Which version of boost do we want?  The actual versions of these packages used depends upon the actual version of Alpine from Layer 1.
 
-Presently we only use boost 1.60, identified as sequential variation 0, that decends from cd/00
-
-Dockerfile.000 produces image cd/000
+Presently we only have a single sequential variation identified as variation 0.
 
 
 * Layer 4.
 
-This layer adds additional packages required to pass configure such as g++, make, and openssl.  It does _not_ add packages that depend upon specific build options such as QT4 or QT5 or the Berkeley DB.
+This layer adds additional packages required to pass configure such as g++, make, and {open | libre}ssl.  It does _not_ add packages that depend upon specific build options such as QT4 or QT5 or the Berkeley DB.
 
-Presently we only have a single sequential variation 0, that decends from cd/000
+Presently we have two variations identified s sequential variations 0 and 1.  The differences focus on the use, or not, of openssl, libressl, and libevent.
 
-Dockerfile.0000 produces image cd/0000
-
+If >= Alpine 3.5 QT5 requires libressl, else openssl is ok.
 
 * Layer 5.
 
-This layer adds the packages for QT, The Berkeley db, and for the provision of X11.  Although there's quite a bit of combinatorial possibility here, presently we only use one variation of QT5, Berkeley db 5.3, and the X11 software.  This decends from cd/0000
+This layer adds the packages for QT, The Berkeley db, and for the provision of X11.  Although there's quite a bit of combinatorial possibility here, presently we only use two variations of this, identified as... you guessed it... variations 0 and 1.
 
-Dockerfile.00000 produces image cd/00000
+If >= Alpine 3.8 we can use apk to install x11vnc, else we must build x11vnc ourselves. 
 
 
-
-The prior 5 layers are a common heirarchy that all coins can share and can easily accomodate additional variation.  From this base:
+The prior 5 layers are a common hierarchy that all coins can share and can easily accomodate additional variation.  From this base:
 
 Each coin has Dockerfile.base which starts from one of these layers and adds the source code.  It is built by feeding --build-arg as necessary. 
 
@@ -248,11 +235,21 @@ Each coin can have one or more build variations such as Dockerfile.debug and Doc
 
 * Dockerfile.debug produces a debug version. It executes autogen, configure, and make and is configured to include debug symbols but no optimization. It adds additional tools to support debugging.
 
+# Random Notes re: Build Woes
+
+Because the source code of these coins is so similar, certain common build issues repeatedly rear their ugly heads.  To wit...
+
+Alpine 3.4 includes boost 1.60.  We have had good luck building at this level.
+
+Alpine 3.5 includes boost 1.62.  But QT5 requires libressl instead of openssl.  This apparently impacts our ability to build x11vnc. But we can build it using the --without-ssl option.
+
+When we try to build the coin binaries we get warning: #warning redirecting incorrect #include <sys/fcntl.h> to <fcntl.h>.  This is just a warning so we won't panic yet.  Because we can still do the build.
+
+Alpine 3.8 includes boost 1.66.  It also has the x11vnc package, so we don't need to build it.  The --without-ssl issue goes away.  But now we have compile errors such as  error: no match for call to '(const key_compare... which we believe is related to the version of boost.
+ 
 # Thanks Tom!
 
-If you find this useful please consider supporting us either via [Patreon](https://patreon.com/coinkit) or our tip jar
-
-xjo: JhkSyR8HVxMANB6PLAKuQeutQqfWRXBYeY
+If you find this useful please consider supporting us via [Patreon](https://patreon.com/coinkit)
 
 
 
