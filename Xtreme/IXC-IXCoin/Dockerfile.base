@@ -1,0 +1,26 @@
+FROM cd/00010
+ARG SOURCE_ORIGIN
+ARG COMMIT
+ARG SOURCE_LOCAL_ROOT
+
+RUN git clone --progress $SOURCE_ORIGIN $SOURCE_LOCAL_ROOT
+WORKDIR $SOURCE_LOCAL_ROOT
+
+# We happen to know that this particular commit works.
+RUN git checkout $COMMIT
+
+# The version of secp256k1 included with ixcoin, at the present commit, appears to cause an elusive seqfault.
+# For more discussion of this please see https://github.com/IXCore/IXCoin/issues/4
+# So therefore graft this into the code instead.
+
+WORKDIR /
+RUN git clone --progress https://github.com/bitcoin-core/secp256k1
+
+# 2018-11
+WORKDIR /secp256k1
+RUN git checkout  e34ceb
+RUN rm -r .git
+
+RUN rm -r $SOURCE_LOCAL_ROOT/src/secp256k1
+RUN mv /secp256k1 $SOURCE_LOCAL_ROOT/src/secp256k1
+WORKDIR $SOURCE_LOCAL_ROOT

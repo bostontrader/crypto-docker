@@ -1,0 +1,8 @@
+FROM cd/000
+
+RUN apk add g++
+RUN apk add make
+
+RUN apk add openssl-dev
+RUN apk add libevent-dev
+

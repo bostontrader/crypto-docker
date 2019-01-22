@@ -1,0 +1,9 @@
+FROM cd/ixc-ixcoin:base
+
+RUN ./autogen.sh
+
+RUN ./configure --with-incompatible-bdb CXXFLAGS='-g -O0'
+
+RUN make V=1
+RUN apk add gdb python-dev py-pip
+RUN pip install gdbgui
