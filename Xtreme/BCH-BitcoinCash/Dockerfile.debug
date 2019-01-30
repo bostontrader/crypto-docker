@@ -1,0 +1,10 @@
+FROM cd/bch-bitcoin-cash-abc:base
+
+RUN ./autogen.sh
+
+RUN ./configure --with-incompatible-bdb --enable-debug
+
+RUN make V=1
+
+RUN apk add gdb python-dev py-pip
+RUN pip install gdbgui
