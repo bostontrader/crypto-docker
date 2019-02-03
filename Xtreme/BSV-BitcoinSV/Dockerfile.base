@@ -1,0 +1,11 @@
+FROM cd/00011
+ARG SOURCE_ORIGIN
+ARG COMMIT
+ARG SOURCE_LOCAL_ROOT
+
+RUN git clone --progress $SOURCE_ORIGIN $SOURCE_LOCAL_ROOT
+WORKDIR $SOURCE_LOCAL_ROOT
+
+# We happen to know that this particular commit works.
+RUN git checkout $COMMIT
+

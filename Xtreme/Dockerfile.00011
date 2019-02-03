@@ -1,0 +1,5 @@
+FROM cd/0001
+
+# Berkeley db 5.3
+RUN apk add db-dev
+
