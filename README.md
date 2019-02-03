@@ -105,7 +105,7 @@ In order to run the debug image, from a shell window on the host:
 
 ```sh
 $ export DATADIR=/some/path/to/.joulecoin
-$ docker run -it --rm --privileged -p 5000:5000 -p 5900:5900 --mount type=bind,source=$DATADIR,destination=/.joulecoin cd/xjo-joulecoin:debug
+$ docker run -it --rm --privileged -p 5900:5900 --mount type=bind,source=$DATADIR,destination=/.joulecoin cd/xjo-joulecoin:debug
 ```
 This will run the xjo-joulecoin:debug image and mount the given "source" directory to the container, for use as joulecoin's datadir.  As with before, the source directory must exist because docker won't create it for you.
 
@@ -123,7 +123,7 @@ Or maybe...
 $ gdbgui -r "src/qt/joulecoin-qt"
 ```
 
-These commands enable gdbgui to invoke gdb which will load the specified executable and get it ready to run.  Gdugui will print a log message saying "View gdbgui at http://172.17.0.2:5000"  From a browser of choice on the host system, browse to there.  There it is!
+These commands enable gdbgui to invoke gdb which will load the specified executable and get it ready to run.  Gdugui will print a log message saying "View gdbgui at http://nn.nn.nn.nn:5000"  From a browser of choice on the host system, browse to there.  There it is!
 
 To help you get started with debugging, go to the bottom of the browser where you see "enter gdb command".  Type **b main** This means to break at the entry of the main function.  Next, type **start**  this "starts" joulecoind.  I'll let you contemplate the subtleties of what that actually means.  Better type, type **s** (for step).  Then doit again and again.. Now you're walking through the code!
 

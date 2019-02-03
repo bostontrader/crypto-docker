@@ -92,4 +92,4 @@ In the upper right corner, look for a button that is tooltipped "send interrupt 
 
 If you find this useful please consider supporting us either via [Patreon](https://patreon.com/coinkit) or our tip jar
 
-bch: 17d84o6Nsj4rjtBKsa3xgBjKB39aNVbgfL
+bch:qpy2tgynf369xwkcu295x25wzpj8f79kmgkupg6d7x
