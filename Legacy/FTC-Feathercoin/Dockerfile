@@ -100,13 +100,10 @@ RUN ./autogen.sh && \
 # This "works" but do I really need all this?
 ./configure --disable-shared --with-pic CXXFLAGS="-fPIC" CPPFLAGS="-fPIC" && \
 
-make && \
+make V=1 && \
 
 # Apparently by default, building FTC does _not_ result in large binaries so it's not worth any effort to strip them of debug symbols.
 # && strip src/feathercoind && strip src/feathercoin-cli && strip src/qt/feathercoin-qt \
 make install && make clean
 
-# Wrap it up
-COPY entrypoint.sh /
-RUN chmod 755 /entrypoint.sh
 
