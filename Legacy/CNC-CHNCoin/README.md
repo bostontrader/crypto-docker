@@ -1,39 +1,68 @@
-# Introduction
-
-CHNCoin aka CNC died and was brought back to life by [RoadTrain](https://github.com/RoadTrain/CHNCoin) The docker image built by this Dockerfile uses that source code.  If you try to build from the original source code, you will probably be unable to sync.  There is a [discussion thread](https://bitcointalk.org/index.php?topic=322488.0) about the resurection.  You can [find the nodes](https://chainz.cryptoid.info/cnc/#!network) that you will need to get started with the sync. (click the 'node list') button.
-
-
 # Getting Started
-```sh
-$ git clone https://github.com/bostontrader/crypto-docker
-$ cd crypto-docker/CNC-CHNCoin
-$ docker build -t crypto-docker-cnc . 
-$ mkdir /home/batman/.chncoin
-$ docker run -it --rm -p 5900 --mount type=bind,source=/home/batman/.chncoin,destination=/root/.chncoin crypto-docker-cnc
-```
-Note: Unless your username really is batman, you may want to tweak this example.  And recall that the mount option wants absolute paths.
 
-The prior step creates and runs a container and gives you a command prompt on it.  From that prompt:
+The container built by this Dockerfile contains the executables built by the CNC-CHNCoin source code.  In addition to the container we also create a DATADIR on the host filesystem.  We later connect the DATADIR to the container as a data volume.
+
+## Build the container
 
 ```sh
-$ . /entrypoint.sh
-$ ./chncoin-qt -addnode=217.175.119.125 -addnode=157.161.128.62 -addnode=178.238.224.213 -addnode=192.0.244.116 &
-$ x11vnc -display :1 -usepw
+git clone https://github.com/bostontrader/crypto-docker
+cd crypto-docker/Legacy/CNC-CHNCoin
+docker build -t crypto-docker-cnc . 
 ```
-entrypoint.sh sets a machine id and then sets up Xvfp so that CHNCoin-qt can use it. Notice the leading '.' Doing this will execute the entrypoint.sh in the context of the calling shell.  We need to do this because the script will set the DISPLAY enviornment variable and we want it to stay set.
 
-Next, execute chncoin-qt in demonic mode (see the trailing &)  This example contains initial nodes that worked for me at the time of writing. You may need to find other nodes by the time you read this.
+## Using the container
 
-Finally, execute x11vnc so that you can see CHNCoin-qt from a VNC viewer on the host.  When this first runs, it will ask for a password.  You'll need this password in your VNC viewer.
+Start the container:
 
-Next, in a 2nd shell...
 ```sh
-$ docker ps
+export DATADIR=/path/to/.chncoin
+docker run -it --rm -p 5900:5900 -e UID=$(id -u) -e GID=$(id -g) --mount type=bind,source=$DATADIR,destination=/.chncoin crypto-docker-cnc
 ```
-This will give you a display of all your running containers.  Hopefully you'll see **crypt-docker-cnc** and can determine which port on the local host it's using.
+This command will give us a shell into the container. It will also expose port 5900 of the container, to port 5900 on the host, which is how we will use an external viewer to view the GUI, if any, from this container. It will also pass the present host system's user's UID and GID to the container, which we need to do in order to not fubar the file permissions of the DATADIR.
 
-Finally, run your VNC viewer of choice and connect to that port on localhost.  For example, if you see that port 5900 in the container has been mapped to port 32768 on the host, you would connect to 127.0.0.1:32768.  Recall that you'll need the password you set for x11vnc earlier.
+Note: /somepath/to/.chncoin must already exist, docker won't create it for you.
+
+Once inside the container...
+
+```sh
+export USERNAME=chncoin
+export GROUPNAME=chncoin
+export DATADIR=/.chncoin
+groupadd --gid $GID $GROUPNAME
+useradd --uid $UID --gid $GID $USERNAME
+mkdir /home/$USERNAME
+chown $USERNAME:$GROUPNAME /home/$USERNAME
+chown $USERNAME:$GROUPNAME $DATADIR
+su $USERNAME
+```
+When the image was run, using the earlier command, it received the numeric UID and GID of the host system's presently logged in user.  The newly started container starts as root.  Given root's permissions, it may then create a new user and group with the same numeric ids.  We also assign an arbitrary USERNAME and GROUPNAME for use by this new user and group.
+
+We need the numeric IDs so that we can avoid harming the file permissions of the data volume, from the POV of the host system.
+
+We need the user and group names because the chown command needs them.  Finally, we need a home directory because the x11vnc program needs it in order to store configuration information.
+
+
+At this point we have a shell prompt in the container and are running as a user with the same uid and gid as the host system's user that ran the image.  You may now run wild.
+
+Unfortunately, the build only builds the GUI:
+
+From the container command line:
+
+```sh
+export DISPLAY=:1
+Xvfb :1 -screen 0 1024x768x16 &
+./chncoin-qt -datadir=$DATADIR &
+x11vnc -display :1 -usepw
+```
+You may see some info messages and warnings from Xvfb. Ignore them.
+-qt may complain "No systemtrayicon available". Ignore it.
+This sets things up so that chncoin-qt thinks it has a display that it can work with.
+Then we execute chncoin-qt, pointing to the correct DATADIR, in demonic mode (see the trailing &)
+Finally, execute x11vnc so that we can see chncoin-qt from a VNC viewer on the host.  When this first runs, it will ask for a password.  You'll need this password in your VNC viewer.
+
+
+Finally, run your VNC viewer of choice and connect to localhost:5900. Recall that you'll need the password you set for x11vnc earlier.
 
 # Tip Jar
+cnc: CLFSf9WBHcFRaQ74P4AM647kjvdEFancmi
 
-CNC: CLFSf9WBHcFRaQ74P4AM647kjvdEFancmi

@@ -48,10 +48,5 @@ RUN git checkout df376b
 
 # 6. Now build it!
 RUN qmake USE_UPNP=-
-RUN make
-
-LABEL author.name="Thomas Radloff"
-
-COPY entrypoint.sh /
-RUN chmod 755 /entrypoint.sh
+RUN make V=1
 
