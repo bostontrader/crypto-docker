@@ -1,36 +1,68 @@
 # Getting Started
-```sh
-$ git clone https://github.com/bostontrader/crypto-docker
-$ cd crypto-docker/PPC-Peercoin
-$ docker build -t crypto-docker-ppc . 
-$ mkdir /home/batman/.ppcoin
-$ docker run -it --rm -p 5900 --mount type=bind,source=/home/batman/.ppcoin,destination=/root/.ppcoin crypto-docker-ppc
-```
-Note: Unless your username really is batman, you may want to tweak this example.  And recall that the mount option wants absolute paths.
 
-The prior step creates and runs a container and gives you a command prompt on it.  From that prompt:
+The container built by this Dockerfile contains the executables built by the PPC-Peercoin source code.  In addition to the container we also create a DATADIR on the host filesystem.  We later connect the DATADIR to the container as a data volume.
+
+## Build the container
 
 ```sh
-$ . /entrypoint.sh    <- notice the leading dot and space!
-$ ./peercoin-qt &
-$ x11vnc -display :1 -usepw
+git clone https://github.com/bostontrader/crypto-docker
+cd crypto-docker/Legacy/PPC-Peercoin
+docker build -t crypto-docker-ppc . 
 ```
-Notice the leading '. ' for entrypoint.  Doing this will execute the entrypoint.sh in the context of the calling shell.  We need to do this because the script will set the DISPLAY enviornment variable and we want it to stay set.
 
-Next, execute peercoin-qt in demonic mode (see the trailing &)
+## Using the container
 
+Start the container:
 
-Finally, execute x11vnc so that you can see peercoin-qt from a VNC viewer on the host.  When this first runs, it will ask for a password.  Invent any password you like.  You'll need this password in your VNC viewer.
-
-
-Next, in a 2nd shell...
 ```sh
-$ docker ps
+export DATADIR=/path/to/.ppcoin
+docker run -it --rm -p 5900:5900 -e UID=$(id -u) -e GID=$(id -g) --mount type=bind,source=$DATADIR,destination=/.ppcoin crypto-docker-ppc
 ```
-This will give you a display of all your running containers.  Hopefully you'll see **crypt-docker-ppc** and can determine which port on the local host it's using.
+This command will give us a shell into the container. It will also expose port 5900 of the container, to port 5900 on the host, which is how we will use an external viewer to view the GUI, if any, from this container. It will also pass the present host system's user's UID and GID to the container, which we need to do in order to not fubar the file permissions of the DATADIR.
 
-Finally, run your VNC viewer of choice and connect to that port on localhost.  For example, if you see that port 5900 in the container has been mapped to port 32768 on the host, you would connect to 127.0.0.1:32768.  Recall that you'll need the password you set for x11vnc earlier.
+Note: /somepath/to/.ppcoin must already exist, docker won't create it for you.
+
+Once inside the container...
+
+```sh
+export USERNAME=ppcoin
+export GROUPNAME=ppcoin
+export DATADIR=/.ppcoin
+groupadd --gid $GID $GROUPNAME
+useradd --uid $UID --gid $GID $USERNAME
+mkdir /home/$USERNAME
+chown $USERNAME:$GROUPNAME /home/$USERNAME
+chown $USERNAME:$GROUPNAME $DATADIR
+su $USERNAME
+```
+When the image was run, using the earlier command, it received the numeric UID and GID of the host system's presently logged in user.  The newly started container starts as root.  Given root's permissions, it may then create a new user and group with the same numeric ids.  We also assign an arbitrary USERNAME and GROUPNAME for use by this new user and group.
+
+We need the numeric IDs so that we can avoid harming the file permissions of the data volume, from the POV of the host system.
+
+We need the user and group names because the chown command needs them.  Finally, we need a home directory because the x11vnc program needs it in order to store configuration information.
+
+
+At this point we have a shell prompt in the container and are running as a user with the same uid and gid as the host system's user that ran the image.  You may now run wild.
+
+Unfortunately, the build only builds the GUI:
+
+From the container command line:
+
+```sh
+export DISPLAY=:1
+Xvfb :1 -screen 0 1024x768x16 &
+./peercoin-qt -datadir=$DATADIR &
+x11vnc -display :1 -usepw
+```
+You may see some info messages and warnings from Xvfb. Ignore them.
+peercoin-qt may complain "No systemtrayicon available". Ignore it.
+This sets things up so that peercoin-qt thinks it has a display that it can work with.
+Then we execute peercoin-qt, pointing to the correct DATADIR, in demonic mode (see the trailing &)
+Finally, execute x11vnc so that we can see peercoin-qt from a VNC viewer on the host.  When this first runs, it will ask for a password.  You'll need this password in your VNC viewer.
+
+
+Finally, run your VNC viewer of choice and connect to localhost:5900. Recall that you'll need the password you set for x11vnc earlier.
 
 # Tip Jar
-
 ppc: PEiTaKJEQYBj2GVuzycHX1TXav2yB8soYt
+

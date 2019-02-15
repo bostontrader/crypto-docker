@@ -50,9 +50,5 @@ RUN git checkout 91c8c8
 
 # 6. Now build it!
 RUN qmake USE_UPNP=-
-RUN make
-
-COPY entrypoint.sh /
-RUN chmod 755 /entrypoint.sh
-
+RUN make V=1
 
