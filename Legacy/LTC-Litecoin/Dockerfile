@@ -42,25 +42,16 @@ RUN apt-get update \
     # 5. Use a modern version of the Berkeley DB instead of 4.8.
     && apt-get install -y --no-install-recommends libdb-dev libdb++-dev \
 
-    # 6 . Clone the source code.  We can either clone the entire thing and checkout a specific commit, or we can clone one specific commit.  We will eventually delete the source code so this has no effect on the size of the image.  However, sometimes github is real slow so it's much faster to just grab one specific commit.
+    # 6 . Clone the source code.
     && apt-get install -y --no-install-recommends \
        ca-certificates \
        git \
 
-    # 6A.  Full clone.
-    #&& git clone https://github.com/litecoin-project/litecoin \
-    #&& cd /litecoin \
+    && git clone --progress https://github.com/litecoin-project/litecoin \
+    && cd /litecoin \
 
     # We happen to know that this particular commit works.
-    #&& git checkout 69fce7 \
-
-    # 6B.  Get one specific commit.
-    && mkdir litecoin \
-    && cd litecoin \
-    && git init \
-    && git remote add origin https://github.com/litecoin-project/litecoin \
-    && git fetch --depth 1 origin 69fce744115a7d2889ff1b90e89582b83de405ad \
-    && git checkout FETCH_HEAD \
+    && git checkout 69fce7 \
 
     # 7. Now build it!
     && ./autogen.sh \
@@ -68,7 +59,7 @@ RUN apt-get update \
     # Recall that by default we require the v4.8 version of the db.  We will use a more modern version (5.3) instead.
     && ./configure --without-miniupnpc --with-incompatible-bdb \
 
-    && make \
+    && make V=1 \
 
     && strip src/bench/bench_litecoin \
     && strip src/litecoind \
