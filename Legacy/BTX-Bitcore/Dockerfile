@@ -1,5 +1,5 @@
 # Build bitcored, bitcore-cli, bitcore-tx, and bitcore-qt from the source code at
-# https://github.com/LIMXTEC/BitCore/commit/4bcc737dce6a9b61c1c7e0f8082656fe292b91ac
+# https://github.com/LIMXTEC/BitCore tag 0.15.2.2 2019-Mar
 
 FROM ubuntu:16.04
 
@@ -71,13 +71,12 @@ RUN  git clone https://github.com/LIMXTEC/BitCore.git
                                                            
 WORKDIR /BitCore
 
-# I happen to know that this particular commit works.
-RUN git checkout 4bcc737
+RUN git checkout 0.15.2.2
 
 RUN \
 ./autogen.sh && \
 ./configure --with-incompatible-bdb --without-miniupnpc  && \
-make && \
+make V=1 && \
 strip src/bitcored && strip src/bitcore-cli && strip src/bitcore-tx && strip src/qt/bitcore-qt  && \
 make install && make clean
 
