@@ -15,7 +15,7 @@ docker build -t cd/000 -f ../Dockerfile.000 ..
 docker build -t cd/0000 -f ../Dockerfile.0000 ..
 
 # 5. Add the packages for QT, DB, and X11
-docker build -t cd/00000 -f ../Dockerfile.00000..
+docker build -t cd/00000 -f ../Dockerfile.00000 ..
 
 # 6. Get the source code dated 2018-08
 docker build -t cd/uno-unobtanium:base -f Dockerfile.base . \
