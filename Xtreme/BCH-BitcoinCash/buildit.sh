@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Build the BCH-BitcoinCash executables from source code dated 2019-01
+# Build the BCH-BitcoinCash executables from source code dated 2019-05
 
 # 1. alpine and git
 docker build -t cd/0 -f ../Dockerfile.0 ..
@@ -17,11 +17,11 @@ docker build -t cd/0001 -f ../Dockerfile.0001 ..
 # 5. Add the packages for QT, DB, and X11
 docker build -t cd/00010 -f ../Dockerfile.00010 ..
 
-# 6. Get the source code dated 2019-01
+# 6. Get the source code dated 2019-05
 docker build -t cd/bch-bitcoin-cash-abc:base -f Dockerfile.base . \
   --build-arg SOURCE_ORIGIN=https://github.com/Bitcoin-ABC/bitcoin-abc \
   --build-arg SOURCE_LOCAL_ROOT=/bitcoin-abc \
-  --build-arg COMMIT=1da1dd 
+  --build-arg COMMIT=v0.19.6
 
 
 
