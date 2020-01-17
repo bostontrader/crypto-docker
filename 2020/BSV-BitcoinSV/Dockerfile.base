@@ -1,0 +1,27 @@
+FROM alpine:3.9
+
+RUN apk update
+RUN apk add git
+
+RUN apk add autoconf
+RUN apk add automake
+RUN apk add libtool
+
+RUN apk add boost-dev  # 1.67.0-r2
+
+RUN apk add g++ # 8.3.0-r0
+RUN apk add make
+RUN apk add openssl-dev
+RUN apk add libevent-dev
+
+RUN apk add db-dev # 5.3.28-r1
+
+ARG SOURCE_ORIGIN
+ARG COMMIT
+ARG SOURCE_LOCAL_ROOT
+
+RUN git clone --progress $SOURCE_ORIGIN
+WORKDIR $SOURCE_LOCAL_ROOT
+RUN git checkout $COMMIT
+
+

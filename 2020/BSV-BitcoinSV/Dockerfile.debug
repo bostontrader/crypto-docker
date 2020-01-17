@@ -7,5 +7,4 @@ RUN ./configure --with-incompatible-bdb --enable-debug
 RUN make V=1
 
 RUN apk add gdb python-dev py-pip
-RUN pip install --upgrade pip
 RUN pip install gdbgui

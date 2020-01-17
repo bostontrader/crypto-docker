@@ -1,31 +1,38 @@
-This coin is somewhat different from the rest in that it doesn't support an GUI.  Either QT4 or QT5. Therefore we omit a lot of material that has to do with dealing with GUI.
+This coin is somewhat different from the others in that it doesn't support a GUI.  Neither QT4 nor QT5. Therefore we omit a lot of material that has to do with dealing with the GUI.
 
-## Build cd/bsv-bitcoin-sv:base
+## 1. Build cd/bsv-bitcoin-sv:base
 
-From a shell window on the host...
+From a shell window on the host in a suitable directory:
 
 ```sh
 $ git clone https://github.com/bostontrader/crypto-docker.git
-$ cd crypto-docker/Xtreme/BSV-BitcoinSV
-$ cd ./buildit.sh
+$ cd crypto-docker/2020/BSV-BitcoinSV
+$ docker build -t cd/bsv-bitcoin-sv:base -f Dockerfile.base \
+  --build-arg SOURCE_ORIGIN=https://github.com/bitcoin-sv/bitcoin-sv \
+  --build-arg SOURCE_LOCAL_ROOT=/bitcoin-sv \
+  --build-arg COMMIT=f5503f \
+  .
 ```
-This will build the hierarchy of images, if not already built, that support BSV, as well as the image that contains the BSV source code, which descends from the hierarchy.  Next...
 
-## Build cd/bsv-bitcoin-sv:production
+This will build the base image for this coin, based on a specific commit that is know to be useable, probably tagged with v0.2.1 tag, and dated July 27, 2019.
+
+
+## 2. Build and run cd/bsv-bitcoin-sv:production
 
 ```sh
 $ docker build -t cd/bsv-bitcoin-sv:production -f Dockerfile.production .
 ```
 This will build cd/bsv-bitcoin-sv:production which contains only the desired executeables, optimized and devoid of debug symbols. Nothing else.  This gives us a compact image. Unlike most of the other coins, this one does not have any GUI and therefore does not have any of the customary X11 plumbing.
 
-The prior steps built the images and are only needed when you first clone the repo or make any changes to the Dockerfiles thereafter.  It is however harmless to run these again.  But after the images are built, it's time to run the bsv-bitcoin-sv:production image.
+Next, it's time to run the bsv-bitcoin-sv:production image.
 
 From a shell window on the host...
 
 ```sh
 $ export DATADIR=/some/path/to/.bitcoin
-$ docker run -it --rm --mount type=bind,source=$DATADIR,destination=/.bitcoin cd/bsv-bitcoin-sv:production
+$ docker run -it --rm -u $(id -u ${USER}):$(id -g ${USER}) --mount type=bind,source=$DATADIR,destination=/.bitcoin cd/bsv-bitcoin-sv:production
 ```
+
 This will run the bsv-bitcoin-sv:production container and mount the given directory to the container, for use as BitcoinSV's datadir.  When we run this we will obtain a shell into the container, and when stopped, the container will be removed. The present user id and group id of the host will be passed to the container, which will use this info to avoid chowning the files of DATADIR to root.
 
 Note: /somepath/to/.bitcoin must already exist, docker won't create it for you.
@@ -33,13 +40,13 @@ Note: /somepath/to/.bitcoin must already exist, docker won't create it for you.
 Once inside the container...
 
 ```sh
-$ src/bitcoind -printtoconsole -rpcuser=user -rpcpassword=password -daemon
-$ src/bitcoin-cli -rpcuser=user -rpcpassword=password <some cli command>
+$ bitcoind -printtoconsole -rpcuser=user -rpcpassword=password -daemon
+$ bitcoin-cli -rpcuser=user -rpcpassword=password <some cli command>
 ```
 
 This turns on bitcoind in daemon mode which then allows us to invoke bitcoin-cli in order to control it.
 
-# Debugging
+# 3. Debugging
 
 ## Build cd/bsv-bitcoin-sv:base
 
@@ -52,7 +59,7 @@ $ docker build -t cd/bsv-bitcoin-sv:debug -f Dockerfile.debug .
 ```
 This will build cd/bsv-bitcoin-sv:debug which contains the desired executeables with debug symbols and no optimization.  It will also install some tools of debuggery. This gives us a larger image.
 
-The prior steps built the images and are only needed when you first clone the repo or make any changes to the Dockerfiles thereafter.  It is however harmless to run these again.  But after the images are built, it's time to run the bsv-bitcoin-sv:debug image.
+Next, run the bsv-bitcoin-sv:debug image.
 
 From a shell window on the host there are basically two choices for running the container:
 
@@ -77,7 +84,9 @@ For either choice, once inside the container...
 ```sh
 $ gdbgui -r "src/bitcoind -printtoconsole -rpcuser=user -rpcpassword=password"
 ```
-The enables gdbgui to invoke gdb which will load src/bitcoind and get it ready to run.  Gdugui will print a log message saying "View gdbgui at http://nn.nn.nn.nn:5000"  From your browser of choice on the host system, browse to that address.  There it is!
+The enables gdbgui to invoke gdb which will load src/bitcoind and get it ready to run.  Gdugui will print a log message saying "View gdbgui at http://nn.nn.nn.nn:5000"  From your browser of choice on the host system, browse to that address.  There it is! 
+
+Beware! If you just cannot connect then there's probably trouble with your firewall.  Unfortunately, figuring that out is far outside the scope of these docs. :-(
 
 To help you get started with debugging, go to the bottom of the browser where you see "enter gdb command".  Type **b main** This means to break at the entry of the main function.  Next, type **start**  this "starts" bitcoind.  I'll let you contemplate the subtleties of what that actually means.  Better type, type **s** (for step).  Then doit again and again.. Now you're walking through the code!
 
@@ -89,6 +98,6 @@ In the upper right corner, look for a button that is tooltipped "send interrupt 
 
 # Thanks Tom!
 
-If you find this useful please consider supporting us either via [Patreon](https://patreon.com/coinkit) or our tip jar
+If you find this useful please consider contributing to our tip jar
 
 bsv:qqcm23jjtsf84gwn6t3f7u4te9llvr76tq46ga9u2c
