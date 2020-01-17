@@ -1,13 +1,11 @@
 # Introduction
 
-The purpose of **crypto-docker** is to provide a general tool-kit for obtaining the various elements of software for a handful of selected crypto coins. This is done primarily by creating appropriate docker images.  The newest images can be built very compactly by using Alpine Linux.
+The purpose of **crypto-docker** is to provide a means of obtaining the various elements of software required by a handful of select crypto coins. This is done primarily by creating suitable docker images.  Some of these images can be built very compactly by using Alpine Linux.
 
 
 # Example Use Cases
 
-As a general tool-kit, **crypto-docker** will give you a great deal of flexibility in deciding what software to build and how to use it.  The following examples are illustrative, not exhaustive:
-
-Using **crypto-docker** you will be able to:
+Each supported coin has one or more Dockerfiles that can be used to create a variety of different kinds of images.  For example, depending upon which coin you're working with, you may be able to:
 
 1. Build a docker image with binaries that are optimized by the compiler but devoid of debugging information.  Said images are relatively small.
 
@@ -15,23 +13,27 @@ Using **crypto-docker** you will be able to:
 
 3. Build an image that only supports the command line tools such as coind or coin-cli, but no GUI.
 
-4. Build an image that supports coin-qt.  The running container will communicate with an external VNC viewer in order to see the GUI.
+4. Build an image that also supports coin-qt.  The running container will communicate with an external VNC viewer in order to see the GUI.
 
 5. Build an image that contains gdb and gdbgui.  The running container will communicate with an external web browser to enable graphical debugging of the software.
 
 
-# It Comes in Two Flavors
+# Now in Three Flavors
 
 ## Legacy Edition
 
-The project originated with the First Dockerfile. As with mice, cats, and children, where there was one, soon there were more. Without benefit of hindsight we did things in a certain way that we might cringe at today.  As time goes on we'll eventually revisit and update the Legacy Dockerfiles, but until then, they still exist and still need your love and understanding.
+The project originated with the First Dockerfile. But as with one's experience with mice, cats, and children, where there was one, soon there were more. Without benefit of hindsight we did things in a certain way that we might cringe at today.  As time goes on we'll eventually revisit and update the Legacy Dockerfiles, but until then, they still exist and still need your love and understanding.
 
 ## Xtreme Edition
 
-The Xtreme edition represents our present level of understanding.  Perhaps not quite on the level of divine inspiration, but there are some signifigant changes, hopefully for the better.
+The Xtreme edition is our failed attempt to DRY the blizzard of Dockerfiles.  Although a superficially worthy goal, as with most things computing, this proved to be easier said than done.  More on this later.
+
+## 2020 Edition
+
+This edition represents our present cutting-edge understanding of these Dockerfiles.
 
 
-# TL;DR. Getting Started
+# Getting Started
 
 1. From a shell window, clone the repo and enter the directory.
 
@@ -40,11 +42,17 @@ $ git clone https://github.com/bostontrader/crypto-docker.git
 $ cd crypto-docker
 ```
 
-2. This directory contains several subdirectories, one for each supported coin, nested inside /Legacy or /Xtreme. Inside each directory is one or more Dockerfiles as well as any associated relevant documentation or extras.  Choose a particular coin of interest and RTFM.
+2. This directory contains several subdirectories, one for each supported coin, nested inside /Legacy, /Xtreme, or /2020. Inside each directory is one or more Dockerfiles as well as any associated relevant documentation or extras.  Choose a particular coin of interest and RTFM.
 
-3. For each particular coin of interest you should create a data directory on the host system.  Said data directory will get attached to the running container at runtime.
+3. For each particular coin of interest you should create a data directory on the host system.  Said data directory will get attached to the running container at runtime via Docker's volume mounting scheme.
 
-4. WARNING!  Be aware that you may or may not need to use sudo with the docker commands, depending the nature of your particular installation.  These instructions assume no sudo.
+WARNING!  Be aware that you may or may not need to use sudo with the docker commands, depending the nature of your particular installation.  These instructions assume no sudo.
+
+
+# Fun with Firewalls
+
+The interaction between running docker containers and the host's network is complicated.  Please see this [interesting article](https://www.lullabot.com/articles/convincing-docker-and-iptables-play-nicely) about this issue.  If you do things his way you can lock down your host system to you heart's delight, but the running container still has full access to the network.  You can further tighten the screws for the container if you wish or dare.
+
 
 # Example 1. XJO-Joulecoin, QT 5
 
@@ -141,11 +149,11 @@ Given the variety of ages of the Dockerfiles in this project, the principles enu
 
 ## 1. Files, permissions, users, and groups.
 
-These containers are ephemeral.  You start them, use them, and discard them at your whim.  They won't save any state, such as wallets or blockchains, between executions.  Therefore said info for a particular coin ought to be stored somewhere in the file system of the host system and bound to the container at runtime.
+The containers created are ephemeral.  You start them, use them, and discard them at your whim.  The containers don't save any state, such as wallets or blockchains, between executions.  Therefore said info for a particular coin ought to be stored somewhere in the file system of the host system and bound to the container at runtime.
 
 Doing so is easier said than done because in addition to binding a host system directory to the container, we also have to figure out file permissions, users, and groups.
 
-File and group permissions operate according to a numeric User ID and Group ID.  The actual names are not relevant.  By default, the processes inside an image will run as root, which is UID 0.  If you accept this default, then some of the bound files will get chowned to that user. In addition to being a security hazard, this practice will generally cause later nuisance.  The legacy Dockerfiles still do this.  But the new Dockerfiles do the following:
+File and group permissions operate according to a numeric User ID and Group ID.  The actual names are not relevant.  By default, the processes inside an image will run as root, which is UID 0.  If you accept this default, then some of the bound files will get chowned to that user. In addition to being a security hazard, this practice will generally cause later nuisance.  The /Legacy Dockerfiles still do this.  But the newer Dockerfiles do the following:
 
 * Run the container passing a desired UID and GID on the command line.
 
@@ -166,7 +174,7 @@ As with the GUI, in order to debug an executable and implement a graphical debug
 
 ## Dealing with Build Variations
 
-Suppose you want to make an image that contains the executables for a particular coin.  Do you build that with debugging symbols but no optimization?  How about no debugging symbols and lots of optimization?  Are you using QT4, QT5, or none of the above?  Are you using Berkley DB 4.8 or a more advanced version? Do you want [woofers and tweeters?](https://www.youtube.com/watch?v=OXDK3x5lAYI&t=118) These examples and many more confound our efforts.  How are we supposed to manage this?  Shall we hand-modify the Dockerfile each time we want to change these options?  Shall we feed parameters to the docker build command?  Given an image, what options does it support?  Shall we create a naming system that enables us to create any number of variations?  So many questions and more.
+Suppose you want to make an image that contains the executables for a particular coin.  Do you build that with debugging symbols but no optimization?  How about no debugging symbols and lots of optimization?  Are you using QT4, QT5, or none of the above?  Are you using Berkley DB 4.8 or a later version? Do you want [woofers and tweeters](https://www.youtube.com/watch?v=OXDK3x5lAYI&t=118) with that? These examples and many more confound our efforts.  How are we supposed to manage this?  Shall we hand-modify the Dockerfile each time we want to change these options?  Shall we feed parameters to the docker build command?  Given an image, what options does it support?  Shall we create a naming system that enables us to create any number of variations?  So many questions and more.
 
 * Image Size
 
@@ -176,13 +184,15 @@ Shall we build the images FROM Alpine, Debian? Ubuntu? Something else?  Can we g
 
 * How can we enable the QT/GUI executable to actually render a GUI?
 
-* The various coins have a tremendous amount of similarity between them because their source code is all related.  How can we work this reality to better organize our images?
+* The various coins have a tremendous amount of similarity between them because their source code is all related.  How can we work this reality to better organize and generally DRY our images?
 
 * Despite the similarities in the source code, there's also quite a lot of difference.  This affects which version of various dependencies can be used.
 
-## Our Solution
+The fundamental issue with all of this is that there is a lot of similarity between the various coins and the various options we might want.  So there is seemingly some benefit to be from DRYing this up.  Unfortunately Docker doesn't present any means of DRYing Dockerfiles. In order to DRY them we'd need some file pre-processing system such as Makefile.  Hey! We already have this so we could take that route. Masochistic readers are encouraged to figure out how to do this [using Makefiles.](https://philpep.org/blog/a-makefile-for-your-dockerfiles)  But unless you already dream in Makefile doing so is probably more trouble than its worth.  
 
-The basic solution is to build a heirarchy of images that derive from common ancestors.  Similar to an OO inheritance tree.  A major problem with this strategy is to find a naming system.  It's not practical to build package names, versions, and/or functionality into the dockerfile and image names.  They would quickly become too long and unwieldy.
+## The /Xtreme Solution
+
+The Xtreme solution is to build a heirarchy of images that derive from common ancestors.  Similar to an OO inheritance tree.  A major problem with this strategy is to find a naming system.  It's not practical to build package names, versions, and/or functionality into the dockerfile and image names.  They would quickly become too long and unwieldy.
 
 A reasonable, if somewhat tedious, solution is to use a numbering system for the names, agumented with an index.  For example:
 
@@ -235,6 +245,14 @@ Each coin can have one or more build variations such as Dockerfile.debug and Doc
 
 * Dockerfile.debug produces a debug version. It executes autogen, configure, and make and is configured to include debug symbols but no optimization. It adds additional tools to support debugging.
 
+Unfortunately all of this is easier said than done.  In actual practice we found that this system just became needlessly complicated.  Indexing all the different variations is just too tedious for lil ole human brains.  In addition, we can't don't actually get much DRY in doing this.  Hence this method is deprecated in favor of /2020
+
+## The /2020 Solution
+
+The aptly named 2020 (as in hindsight) solution.  In this case we can still use a limited heirarchy of Dockerfile to produce a base, debug, production, etc.  But we don't otherwise try to extend this heirarchy to include other coins.  This leaves us with a fair amount of RY, but at least its workable solution.
+
+
+
 # Random Notes re: Build Woes
 
 Because the source code of these coins is so similar, certain common build issues repeatedly rear their ugly heads.  To wit...
@@ -246,11 +264,6 @@ Alpine 3.5 includes boost 1.62.  But QT5 requires libressl instead of openssl.  
 When we try to build the coin binaries we get warning: #warning redirecting incorrect #include <sys/fcntl.h> to <fcntl.h>.  This is just a warning so we won't panic yet.  Because we can still do the build.
 
 Alpine 3.8 includes boost 1.66.  It also has the x11vnc package, so we don't need to build it.  The --without-ssl issue goes away.  But now we have compile errors such as  error: no match for call to '(const key_compare... which we believe is related to the version of boost.
- 
-# Thanks Tom!
-
-If you find this useful please consider supporting us via [Patreon](https://patreon.com/coinkit)
-
 
 
 
