@@ -67,17 +67,17 @@ apt-get update && \
 apt-get install -y --no-install-recommends libdb4.8-dev libdb4.8++-dev \
 
 # 4.QT 
-&& apt-get install -y --no-install-recommends \
-libqt4-dev libprotobuf-dev protobuf-compiler libqrencode-dev \
+# && apt-get install -y --no-install-recommends \
+# libqt4-dev libprotobuf-dev protobuf-compiler libqrencode-dev \
 
 # 4. Install QT5
-# && apt-get install -y --no-install-recommends \
+&& apt-get install -y --no-install-recommends \
 
-# libqt5core5a \
-# libqt5gui5 \
-# qttools5-dev-tools \
-# protobuf-compiler \
-# qtbase5-dev \
+ libqt5core5a \
+ libqt5gui5 \
+ qttools5-dev-tools \
+ protobuf-compiler \
+ qtbase5-dev \
 
 && apt-get clean
 
@@ -88,14 +88,16 @@ RUN git clone https://github.com/nochowderforyou/clams
 WORKDIR /clams
 
 # I happen to know that this particular commit works.
-RUN git checkout 058b5f
+# RUN git checkout 058b5f
+RUN git checkout v2.1.0rc1
 
 # Fix this error.  See https://bitcointalk.org/index.php?topic=1312757.0
-RUN sed -i 's/<const CScriptID&>/<CScriptID>/g' src/rpcrawtransaction.cpp
+# RUN sed -i 's/<const CScriptID&>/<CScriptID>/g' src/rpcrawtransaction.cpp
 
 # 6. Make and strip the debug symbols
 RUN ./autogen.sh && ./configure \
-&& make && strip src/clamd && strip src/test/test_bitcoin && strip src/qt/clam-qt && strip src/qt/test/test_bitcoin-qt \
+# && make V=1 && strip src/clamd && strip src/qt/clam-qt && strip src/qt/test/test_bitcoin-qt \
+&& make V=1 \
 && make install && make clean
 
 # Wrap it up
