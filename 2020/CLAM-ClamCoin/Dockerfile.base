@@ -1,0 +1,40 @@
+FROM ubuntu:18.04
+LABEL maintainer Thomas Radloff <bostontrader@gmail.com>
+
+RUN apt update
+RUN apt install ca-certificates git -y --no-install-recommends
+
+ARG SOURCE_ORIGIN
+ARG COMMIT
+ARG SOURCE_LOCAL_ROOT
+
+RUN git clone --progress $SOURCE_ORIGIN
+WORKDIR $SOURCE_LOCAL_ROOT
+RUN git checkout $COMMIT
+
+# v 1.65
+RUN apt-get install -y --no-install-recommends \
+libboost-chrono-dev \
+libboost-filesystem-dev \
+libboost-program-options-dev \
+libboost-system-dev \
+libboost-test-dev \
+libboost-thread-dev
+
+# v 7.5
+RUN apt-get install -y --no-install-recommends g++
+
+# v 5.3
+RUN apt-get install -y --no-install-recommends libdb++-dev
+
+# Everything else that's needed to build...
+RUN apt-get install -y --no-install-recommends \
+autoconf \
+automake \
+dh-autoreconf \
+libevent-dev \
+libssl-dev \
+libtool \
+make \
+pkg-config
+
