@@ -1,0 +1,32 @@
+FROM alpine:3.11
+
+RUN apk add git
+
+# 1. Get the source code
+ARG SOURCE_ORIGIN
+ARG COMMIT
+ARG SOURCE_LOCAL_ROOT
+
+RUN git clone --progress $SOURCE_ORIGIN
+WORKDIR $SOURCE_LOCAL_ROOT
+RUN git checkout $COMMIT
+
+# 2. Get the tools to pass autogen
+RUN apk add autoconf
+RUN apk add automake
+RUN apk add libtool
+
+# 3. Get a suitable version of boost
+RUN apk add boost-dev  # 1.71.0-r1
+
+# 4. Get the tools to pass configure
+RUN apk add db-dev # 5.3.28-r1
+RUN apk add g++ # 8.3.0-r0
+RUN apk add make
+RUN apk add openssl-dev
+RUN apk add pkgconf
+RUN apk add libevent-dev
+RUN apk add libsodium-dev
+
+
+
