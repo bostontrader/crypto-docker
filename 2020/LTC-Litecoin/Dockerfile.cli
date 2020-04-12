@@ -1,0 +1,34 @@
+FROM cd/ltc-litecoin:base
+
+RUN ./autogen.sh
+
+RUN ./configure --with-incompatible-bdb CXXFLAGS='-O2'
+
+RUN make V=1
+RUN make install
+RUN test_litecoin
+
+FROM ubuntu:18.04
+
+COPY --from=0 /usr/local/bin/litecoind /usr/local/bin/
+COPY --from=0 /usr/local/bin/litecoin-cli /usr/local/bin/
+
+COPY --from=0 /usr/lib/x86_64-linux-gnu/libboost_chrono.so.1.65.1 /usr/lib/
+COPY --from=0 /usr/lib/x86_64-linux-gnu/libboost_filesystem.so.1.65.1 /usr/lib/
+COPY --from=0 /usr/lib/x86_64-linux-gnu/libboost_system.so.1.65.1 /usr/lib/
+COPY --from=0 /usr/lib/x86_64-linux-gnu/libboost_thread.so.1.65.1 /usr/lib/
+COPY --from=0 /usr/lib/x86_64-linux-gnu/libcrypto.so.1.1 /usr/lib/x86_64-linux-gnu
+COPY --from=0 /usr/lib/x86_64-linux-gnu/libdb_cxx-5.3.so /usr/lib/x86_64-linux-gnu
+COPY --from=0 /usr/lib/x86_64-linux-gnu/libevent-2.1.so.6 /usr/lib/x86_64-linux-gnu
+COPY --from=0 /usr/lib/x86_64-linux-gnu/libevent_pthreads-2.1.so.6 /usr/lib/x86_64-linux-gnu
+
+#ldd says all of the above and these as well.  But we don't appear to need these.
+#linux-vdso.so.1 (0x00007ffeed34d000)
+#libstdc++.so.6 => /usr/lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007fa87b682000)
+#libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007fa87b2e4000)
+#libgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007fa87b0cc000)
+#libpthread.so.0 => /lib/x86_64-linux-gnu/libpthread.so.0 (0x00007fa87aead000)
+#libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007fa87aabc000)
+#/lib64/ld-linux-x86-64.so.2 (0x00007fa87c247000)
+
+
