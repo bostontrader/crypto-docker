@@ -1,113 +1,94 @@
-# Build devcoind and devcoin-qt from the source code dated October 2018, located at:
+# 18.04 is the most recent LTS version that provides db4.8
+FROM ubuntu:18.04
+LABEL maintainer Thomas Radloff <bostontrader@gmail.com>
 
-FROM ubuntu:16.04
-
+# Build devcoind only from this commit dated 2020-Dec that is known to work.
+# No devcoin-cli, QT UI, testing, or anything else.
 ENV SOURCE_ORIGIN https://github.com/devcoin/core
-ENV COMMIT 453b245d82940653011b384b1710a24b71c20a5a
-ENV SOURCE_LOCAL_ROOT /core
+ENV COMMIT fb0d7d0063ef612bb0e43006551c823a901d3fb6
+ENV SOURCE_LOCAL_ROOT core
 
 # 1. We need to do this first in order to see any packages at all
-RUN apt-get update \
+RUN apt-get update
 
-    # 2. Install the basic foundation of build tools.
-    && apt-get install -y --no-install-recommends \
-       build-essential \
-       libssl-dev \
-       libtool \
-       openssl \
-       pkg-config \
+# 2. We need git to git the source code.
+RUN apt install -y --no-install-recommends ca-certificates git 
 
-    # 3. We don't need all of the boost libraries, only selectively install a handful of them
-    && apt-get install -y --no-install-recommends \
-       libboost-chrono-dev \
-       libboost-filesystem-dev \
-       libboost-program-options-dev \
-       libboost-system-dev \
-       libboost-test-dev \
-       libboost-thread-dev \
+# 3. Install the basic foundation of build tools.
+RUN apt install -y --no-install-recommends \
+    build-essential \
+    libssl-dev \
+    libtool \
+    openssl \
+    pkg-config
 
-    # 4. Let's build this with QT4
-    && apt-get install -y --no-install-recommends libqt4-dev qt4-qmake \
+# 4. We don't need all of the boost libraries (v1.65), only selectively install a handful of them
+RUN apt install -y --no-install-recommends \
+    libboost-chrono-dev \
+    libboost-filesystem-dev \
+    libboost-program-options-dev \
+    libboost-system-dev \
+    libboost-test-dev \
+    libboost-thread-dev
 
-    # 5. Install these packages in order to view the QT GUI using a VNC viewer.  Which you need to do if you want to run the QT GUI inside a docker container.
-    && apt-get install -y --no-install-recommends x11vnc xvfb \
+# 5. Need these to download the receiver files.
+RUN apt install -y --no-install-recommends curl libz-dev
 
-    # 6. Need curl to download the receiver files.
-    && apt-get -y install curl \
+# 6. Do all this so that we can get granddad's version 4.8 of db
 
-    # 7. Use v4.8 of the db.
-    # 7.1 This is a dependency of add-apt-repository.
-    && apt-get install -y --no-install-recommends software-properties-common \
+# We need this for add-apt-repository.  Part of this is tzdata and it wants interactive input.  Suppress that 
+# and accept UTC as the default TZ
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt install -y --no-install-recommends software-properties-common
 
-    # 7.2 We need this because we want to get v4.8 of the wallet db
-    && add-apt-repository ppa:bitcoin/bitcoin \
+# We need this because we want to get v4.8 of the wallet db
+RUN add-apt-repository ppa:bitcoin/bitcoin
 
-    # 7.3 And now we need to update this again
-    && apt-get update \
+# And now we need to update this again because of the prior added repository
+RUN apt update
 
-    # 7.4 Now get v4.8 of the wallet db
-    && apt-get install -y --no-install-recommends libdb4.8-dev libdb4.8++-dev \
+# Finally... now get v4.8 of db
+RUN apt install -y --no-install-recommends libdb4.8-dev libdb4.8++-dev
 
-    # 8. Now clone the source code.
-    && apt-get install -y --no-install-recommends \
-       ca-certificates \
-       git \
+# 7. Now clone the source code.
+RUN git clone $SOURCE_ORIGIN
+WORKDIR $SOURCE_LOCAL_ROOT
+RUN git checkout $COMMIT
 
-    && git clone $SOURCE_ORIGIN \
-    && cd $SOURCE_LOCAL_ROOT \
+# 8. Now build devcoind only.  There's no other devcoin-cli or any of that.
+WORKDIR src
+RUN make -f makefile.unix USE_UPNP=- 
+RUN strip devcoind
 
-    # We happen to know that this particular commit works.
-    && git checkout $COMMIT \
+FROM ubuntu:18.04
 
-    # 9. Now build devcoind
-    && cd $SOURCE_LOCAL_ROOT/src \
-    #RUN chmod 755 leveldb/build_detect_platform
-    && make -f makefile.unix USE_UPNP=- \
+COPY --from=0 /core/src/devcoind /usr/local/bin
 
-    # At this point, devcoind should be useable.
-    # ./devcoind -printtoconsole -rpcuser=user -rpcpassword=password
-    # Next, build the GUI
+# At this point devcoind still needs access to shared libraries.  Use ldd devcoind to find out which 
+# shared libraries it uses.  Some of them are already here, but the following must be copied from stage 0.
 
-    # 10. Now build the QT4 GUI
-    && cd $SOURCE_LOCAL_ROOT \
-    && qmake USE_UPNP=- \
-    && make \
+# 1. Copy the boost shared libraries.  These also need symlinks to work.
+COPY --from=0 /usr/lib/x86_64-linux-gnu/libboost_filesystem.so.1.65.1 /usr/lib/x86_64-linux-gnu/
+COPY --from=0 /usr/lib/x86_64-linux-gnu/libboost_program_options.so.1.65.1 /usr/lib/x86_64-linux-gnu/
+COPY --from=0 /usr/lib/x86_64-linux-gnu/libboost_system.so.1.65.1 /usr/lib/x86_64-linux-gnu/
+COPY --from=0 /usr/lib/x86_64-linux-gnu/libboost_thread.so.1.65.1 /usr/lib/x86_64-linux-gnu/
 
-    # 11. There doesn't appear to be any 'make install' feature, so let's do it ourselves...
-    && strip $SOURCE_LOCAL_ROOT/devcoin-qt \
-    && strip $SOURCE_LOCAL_ROOT/src/devcoind \
-    && cp $SOURCE_LOCAL_ROOT/devcoin-qt /usr/local/bin \
-    && cp $SOURCE_LOCAL_ROOT/src/devcoind /usr/local/bin \
+RUN ln -s /usr/lib/x86_64-linux-gnu/libboost_filesystem.so.1.65.1 /usr/lib/x86_64-linux-gnu/libboost_filesystem.so \
+    && ln -s /usr/lib/x86_64-linux-gnu/libboost_program_options.so.1.65.1 /usr/lib/x86_64-linux-gnu/libboost_program_options.so \
+    && ln -s /usr/lib/x86_64-linux-gnu/libboost_system.so.1.65.1 /usr/lib/x86_64-linux-gnu/libboost_system.so \
+    && ln -s /usr/lib/x86_64-linux-gnu/libboost_thread.so.1.65.1 /usr/lib/x86_64-linux-gnu/libboost_thread.so
 
-    # 12. Establish a datadir.
-    && mkdir /.devcoin \
+# 2. Copy these others that don't need symlinks.
+COPY --from=0 /usr/lib/libdb_cxx-4.8.so /usr/lib/
+COPY --from=0 /usr/lib/x86_64-linux-gnu/libcrypto.so.1.1 /usr/lib/x86_64-linux-gnu/
+COPY --from=0 /usr/lib/x86_64-linux-gnu/libssl.so.1.1 /usr/lib/x86_64-linux-gnu/
 
-    # 13. Now delete as much stuff as we can find to shrink the image.  Unfortunately, this is easier said than done.  When we delete _any_ of these packages, which packages do we still depend upon get removed? Also, how much do the development packages _really_ bloat the image size?
+# 3. Finally, do some gyrations with users and groups so that we don't mess up the file permissions of the linked
+# volume on the host system. https://vsupalov.com/docker-shared-permissions/
+ARG USER_ID
+ARG GROUP_ID
 
-    && cd / \
-    && rm -rf $SOURCE_LOCAL_ROOT \
-
-    ## 13.1 Don't need the development tools anymore.
-    #&& apt-get purge -y --auto-remove \
-    #   build-essential \
-    #   libssl-dev \
-    #   libtool \
-    # Don't remove this. x11vnc depends on this and will be removed with this.
-    # openssl \
-    #   pkg-config
-
-    # 13.2 Can we prune any of this? Do we care?
-    #&& apt-get purge -y --auto-remove \ 
-    # libboost-chrono-dev \
-    # libboost-filesystem-dev \
-    # libboost-program-options-dev \
-    # libboost-system-dev \
-    # libboost-test-dev \
-    # libboost-thread-dev \
-
-    # 13.3 Don't need git any more.
-    && apt-get purge -y --auto-remove \
-       git \
-
-    && rm -rf /var/lib/apt/lists/*
+RUN addgroup --gid $GROUP_ID dvcuser
+RUN adduser --disabled-password --gecos '' --uid $USER_ID --gid $GROUP_ID dvcuser
+USER dvcuser
 
