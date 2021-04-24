@@ -1,8 +1,3 @@
-.peercoin
-ppcuser
-/PPC-Peercoin
-crypto-docker-ppc
-
 # Getting Started
 
 The container built by this Dockerfile contains peercoind and peercoin-cli only.  No QT GUI, testing, benchmarks, etc.
