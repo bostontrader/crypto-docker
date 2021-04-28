@@ -1,6 +1,3 @@
-# Build the Feathercoin daemon, cli, and QT5 GUI from the code at
-# https://github.com/FeatherCoin/Feathercoin/commit/6621a975b556175964e132654baea448e7702479
-
 FROM ubuntu:20.04
 LABEL maintainer Thomas Radloff <bostontrader@gmail.com>
 
